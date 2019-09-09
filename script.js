@@ -3,8 +3,8 @@
 var level = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 1, 5, 1, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 1, 1, 0, 1, 5, 1, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 2, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
@@ -19,14 +19,44 @@ var live = [];
 
 var levelElements = [];
 
-var tiles = [
-    "air",
-    "wall",
-    "barrel",
-    "ice",
-    "cirno",
-    "frog",
-    "star"
+var obstacles = [];
+
+var tileTypes = [
+    {
+        name: "air",
+        coll: false,
+        push: false
+    },
+    {
+        name: "wall",
+        coll: true,
+        push: false
+    },
+    {
+        name: "barrel",
+        coll: true,
+        push: true
+    },
+    {
+        name: "ice",
+        coll: true,
+        push: true
+    },
+    {
+        name: "cirno",
+        coll: false,
+        push: false
+    },
+    {
+        name: "frog",
+        coll: true,
+        push: false
+    },
+    {
+        name: "star",
+        coll: false,
+        push: false
+    }
     ]
 
 var ids = {
@@ -54,6 +84,7 @@ function createGame()
     for (var j = 0; j < bounds.y; j++)
     {
         live[j] = [];
+        obstacles[j] = [];
 
         levelElements[j] = [];
         var row = document.createElement("DIV");
@@ -131,6 +162,12 @@ function updateGame(direction)
             var id = level[j][i];
             if (id == ids.frog && live[j][i] == true)
             {
+                var result = findPath(i, j, player.x, player.y);
+                if (result.length > 0)
+                {
+                    moveTo(i, j, result[0].y, result[0].x);
+                }
+                /*
                 tx = i;
                 ty = j;
                 var dir = Math.floor(Math.random() * 4);
@@ -148,6 +185,7 @@ function updateGame(direction)
                         live[ty][tx] = false;
                     }
                 }
+                */
             }
         }
     }
@@ -168,3 +206,34 @@ function updateGame(direction)
     }
 }
 
+function findPath(startX, startY, endX, endY)
+{
+    for (var j = 0; j < bounds.y; j++)
+    {
+        for (var i = 0; i < bounds.x; i++)
+        {
+            if (tileTypes[level[j][i]].coll)
+                obstacles[j][i] = 0;
+            else
+                obstacles[j][i] = 1;
+        }
+    }
+    var graph = new Graph(obstacles);
+    var start = graph.grid[startY][startX];
+    var end = graph.grid[endY][endX];
+    var result = astar.search(graph, start, end);
+    //debugger;
+    return result;
+}
+
+function moveTo(startX, startY, endX, endY)
+{
+    var id = level[startY][startX];
+    if (endX < 0 || endX >= bounds.x || endY < 0 || endY >= bounds.y) return;
+    if (level[endY][endX] == 0)
+    {
+        level[startY][startX] = 0;
+        level[endY][endX] = id;
+        live[endY][endX] = false;
+    }
+}
