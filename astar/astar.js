@@ -53,9 +53,10 @@ var astar = {
 
     var openHeap = getHeap();
     var closestNode = start; // set the start node to be the closest if required
+    var closedList = [];
 
     start.h = heuristic(start, end);
-    graph.markDirty(start);
+    //graph.markDirty(start);
 
     openHeap.push(start);
 
@@ -66,11 +67,14 @@ var astar = {
 
       // End case -- result has been found, return the traced path.
       if (currentNode === end) {
+        while(closedList.length > 0)
+            closedList.pop().closed = false;
         return pathTo(currentNode);
       }
 
       // Normal case -- move currentNode from open to closed, process each of its neighbors.
       currentNode.closed = true;
+      closedList.push(currentNode);
 
       // Find all neighbors for the current node.
       var neighbors = graph.neighbors(currentNode);
@@ -115,6 +119,9 @@ var astar = {
         }
       }
     }
+
+    while(closedList.length > 0)
+        closedList.pop().closed = false;
 
     if (closest) {
       return pathTo(closestNode);
