@@ -77,10 +77,13 @@ var dir = {
     up: { x: 0, y: -1 },
     down: { x: 0, y: 1 },
     left: { x: -1, y: 0 },
-    right: { x: 1, y: 0 }
+    right: { x: 1, y: 0 },
+    none: { x: 0, y: 0 }
 }
 
 var dirs = [ dir.up, dir.down, dir.left, dir.right ];
+
+var timerId;
 
 function createGame()
 {
@@ -309,6 +312,8 @@ function createGame()
         }
         document.getElementById("game").appendChild(row);
     }
+
+    timerId = setTimeout(gameTick, 1000);
 }
 
 document.onkeydown = checkKey;
@@ -338,8 +343,16 @@ function checkKey(e)
     if (direction != null) updateGame(direction);
 }
 
+function gameTick()
+{
+    updateGame(dir.none);
+}
+
 function updateGame(direction)
 {
+    clearTimeout(timerId);
+    timerId = setTimeout(gameTick, 1000);
+
     var id;
     var newStar = false;
 
@@ -517,8 +530,8 @@ function findPath(startX, startY, endX, endY)
 function moveTo(startX, startY, endX, endY)
 {
     var id = level[startY][startX];
-    var id2 = level[endY][endX];
     if (endX < 0 || endX >= bounds.x || endY < 0 || endY >= bounds.y) return 0;
+    var id2 = level[endY][endX];
     if (id2 == 0 || id2 == ids.star)
     {
         level[startY][startX] = 0;
