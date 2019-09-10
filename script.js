@@ -102,6 +102,16 @@ var charged = false;
 var tickCount = 0;
 var difficulty = 1;
 
+var audio = {
+    current: 0,
+    list: [
+    document.createElement("AUDIO"),
+    document.createElement("AUDIO"),
+    document.createElement("AUDIO"),
+    document.createElement("AUDIO")
+    ]
+}
+
 function createGame()
 {
     // Use pre-existing level
@@ -355,6 +365,7 @@ function checkKey(e)
     if (e.keyCode == '82') {
         e.preventDefault();
         clearTimeout(timerId);
+        playSound("die.wav");
         document.getElementById("game").style.opacity = 0.5;
         createLevel();
         return;
@@ -363,18 +374,22 @@ function checkKey(e)
     if (e.keyCode == '38' || e.keyCode == '69') {
         if (dead == false) direction = dir.up;
         e.preventDefault();
+        footstep();
     }
     else if (e.keyCode == '40' || e.keyCode == '68') {
         if (dead == false) direction = dir.down;
         e.preventDefault();
+        footstep();
     }
     else if (e.keyCode == '37' || e.keyCode == '83') {
         if (dead == false) direction = dir.left;
         e.preventDefault();
+        footstep();
     }
     else if (e.keyCode == '39' || e.keyCode == '70') {
         if (dead == false) direction = dir.right;
         e.preventDefault();
+        footstep();
     }
     if (e.keyCode == '32') {
         e.preventDefault();
@@ -408,6 +423,7 @@ function updateGame(direction)
         if (id == 0) doMove = true;
         else if (id == ids.star)
         {
+            playSound("tap2.wav");
             //document.getElementById("game").style.opacity = 0.5;
             //setTimeout(endFlash, 200);
             charged = true;
@@ -429,6 +445,7 @@ function updateGame(direction)
                 if (tileTypes[id2].push == true) continue;
                 if (id2 != 0) break;
 
+                playSound("drag.wav");
                 while (true)
                 {
                     level[tty][ttx] = level[tty - direction.y][ttx - direction.x];
@@ -514,6 +531,7 @@ function updateGame(direction)
                 id = level[j][i];
                 if (id == ids.egg)
                 {
+                    playSound("p.wav");
                     level[j][i] = ids.frog;
                     frogCount++;
                 }
@@ -618,7 +636,6 @@ function findPath(startX, startY, endX, endY)
     var start = graph.grid[startY][startX];
     var end = graph.grid[endY][endX];
     var result = astar.search(graph, start, end);
-    //debugger;
     return result;
 }
 
@@ -639,6 +656,7 @@ function moveTo(startX, startY, endX, endY)
         if (charged) flashFreeze();
         else
         {
+            playSound("die.wav");
             restartGame = true;
             dead = true;
             clearTimeout(timerId);
@@ -670,6 +688,8 @@ function flashFreeze()
     if (dead == true) return;
     if (!charged) return;
 
+    playSound("ender.wav");
+
     for (var j = player.y - 2; j <= player.y + 2; j++)
     {
         if (j < 0 || j >= bounds.y) continue;
@@ -678,6 +698,7 @@ function flashFreeze()
             if (i < 0 || i >= bounds.x) continue;
             if (level[j][i] == ids.frog || level[j][i] == ids.egg)
             {
+                playSound("mischit.wav");
                 level[j][i] = ids.ice;
                 var div = levelElements[j][i];
                 var id = ids.ice;
@@ -710,4 +731,23 @@ function flashFreeze()
     setTimeout(endFlash, 200);
     charged = false;
     level[player.y][player.x] = ids.cirno;
+}
+
+var footAlter = 0;
+
+function footstep()
+{
+    footAlter++;
+    if (footAlter > 1) footAlter = 0;
+    if (footAlter == 0) playSound("pat.wav");
+    else playSound("pat3.wav");
+}
+
+function playSound(filename)
+{
+    audio.list[audio.current].src = "sfx/" + filename;
+    audio.list[audio.current].play();
+    audio.current++;
+    if (audio.current >= audio.list.length)
+        audio.current = 0;
 }
