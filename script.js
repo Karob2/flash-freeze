@@ -5,12 +5,12 @@ var level = [
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 0, 1, 1, 0, 1, 5, 1, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 2, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 3, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 1, 6, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     ]
@@ -163,29 +163,21 @@ function updateGame(direction)
             if (id == ids.frog && live[j][i] == true)
             {
                 var result = findPath(i, j, player.x, player.y);
-                if (result.length > 0)
+                if (result.length > 0 && (result.length <= 10 || Math.abs(player.x - i) + Math.abs(player.y - j) < 5))
                 {
                     moveTo(i, j, result[0].y, result[0].x);
                 }
-                /*
-                tx = i;
-                ty = j;
-                var dir = Math.floor(Math.random() * 4);
-                if (dir == 0) ty--;
-                if (dir == 1) ty++;
-                if (dir == 2) tx--;
-                if (dir == 3) tx++;
-                if (tx >= 0 && tx < bounds.x
-                    && ty >= 0 && ty < bounds.y)
+                else
                 {
-                    if (level[ty][tx] == 0)
-                    {
-                        level[j][i] = 0;
-                        level[ty][tx] = ids.frog;
-                        live[ty][tx] = false;
-                    }
+                    tx = i;
+                    ty = j;
+                    var dir = Math.floor(Math.random() * 4);
+                    if (dir == 0) ty--;
+                    if (dir == 1) ty++;
+                    if (dir == 2) tx--;
+                    if (dir == 3) tx++;
+                    moveTo(i, j, tx, ty);
                 }
-                */
             }
         }
     }
