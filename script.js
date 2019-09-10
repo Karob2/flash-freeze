@@ -799,6 +799,7 @@ function flashFreeze()
     level[player.y][player.x] = ids.cirno;
     if (difficulty != oldDifficulty && difficulty >= 10)
     {
+        tickCount = 0;
         alterEgg++;
         if (alterEgg > 1) alterEgg = 0;
         //if (alterEgg == 0) spawnIceItem(ids.barrel);
