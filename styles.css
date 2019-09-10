@@ -16,9 +16,51 @@ body {
 
 #info {
     background-color: #333;
+    color: #999;
     height: 32px;
     font-family: "Arial Black", Gadget, sans-serif;
     font-size: 28px;
-    color: #999;
     padding-left: 16px;
+}
+
+#announce {
+    position: absolute;
+    left: 0;
+    top: -20px;
+    width: 960px;
+    height: 576px;
+    line-height: 576px;
+    text-align: center;
+    font-family: "Arial Black", Gadget, sans-serif;
+    font-size: 40px;
+    color: #999;
+    /*
+    text-shadow:
+        -2px -2px 0 #000,  
+        2px -2px 0 #000,
+        -2px 2px 0 #000,
+        2px 2px 0 #000;
+        */
+}
+
+#announce2 {
+    position: absolute;
+    left: 0;
+    top: 20px;
+    width: 960px;
+    height: 576px;
+    line-height: 576px;
+    text-align: center;
+    font-family: "Arial Black", Gadget, sans-serif;
+    font-size: 18px;
+    color: #999;
+}
+
+#backing {
+    position: absolute;
+    left: 240px;
+    top: 144px;
+    width: 480px;
+    height: 288px;
+    background-color: #333;
 }

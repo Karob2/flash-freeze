@@ -160,6 +160,7 @@ function createGame()
 
 function createLevel()
 {
+    document.getElementById("alerts").style.visibility = "hidden";
     document.getElementById("game").style.opacity = 1;
     tickCount = 0;
     difficulty = 1;
@@ -347,36 +348,46 @@ document.onkeydown = checkKey;
 
 function checkKey(e)
 {
-    if (dead == true) return;
-
     var direction = null;
     e = e || window.event;
     //alert(e.keyCode);
 
+    if (e.keyCode == '82') {
+        e.preventDefault();
+        clearTimeout(timerId);
+        document.getElementById("game").style.opacity = 0.5;
+        createLevel();
+        return;
+    }
+
     if (e.keyCode == '38' || e.keyCode == '69') {
-        direction = dir.up;
+        if (dead == false) direction = dir.up;
         e.preventDefault();
     }
     else if (e.keyCode == '40' || e.keyCode == '68') {
-        direction = dir.down;
+        if (dead == false) direction = dir.down;
         e.preventDefault();
     }
     else if (e.keyCode == '37' || e.keyCode == '83') {
-        direction = dir.left;
+        if (dead == false) direction = dir.left;
         e.preventDefault();
     }
     else if (e.keyCode == '39' || e.keyCode == '70') {
-        direction = dir.right;
+        if (dead == false) direction = dir.right;
         e.preventDefault();
     }
     if (e.keyCode == '32') {
+        e.preventDefault();
+        if (dead == true) return;
+        if (!charged) return;
+
         for (var j = player.y - 2; j <= player.y + 2; j++)
         {
             if (j < 0 || j >= bounds.y) continue;
             for (var i = player.x - 2; i <= player.x + 2; i++)
             {
                 if (i < 0 || i >= bounds.x) continue;
-                if (level[j][i] == ids.frog)
+                if (level[j][i] == ids.frog || level[j][i] == ids.egg)
                 {
                     level[j][i] = ids.ice;
                     var div = levelElements[j][i];
@@ -386,6 +397,13 @@ function checkKey(e)
                     div.style.backgroundPositionX = -tx + "px";
                     div.style.backgroundPositionY = -ty + "px";
                     difficulty++;
+                    if (difficulty >= 20)
+                    {
+                        document.getElementById("alerts").style.visibility = "visible";
+                        document.getElementById("game").style.opacity = 0.5;
+                        dead = true;
+                        clearTimeout(timerId);
+                    }
                 }
                 if (level[j][i] == 0)
                 {
@@ -402,7 +420,6 @@ function checkKey(e)
         setTimeout(endFlash, 200);
         charged = false;
         level[player.y][player.x] = ids.cirno;
-        e.preventDefault();
     }
     if (direction != null) updateGame(direction);
 }
@@ -526,11 +543,28 @@ function updateGame(direction)
         spawnItem(ids.star);
     }
 
-    /*
     if (tickCount > 30)
     {
         tickCount = 0;
-        */
+        var frogCount = 0;
+        var starCount = 0;
+        for (var j = 0; j < bounds.y; j++)
+        {
+            for (var i = 0; i < bounds.x; i++)
+            {
+                id = level[j][i];
+                if (id == ids.egg)
+                {
+                    level[j][i] = ids.frog;
+                    frogCount++;
+                }
+                if (id == ids.frog) frogCount++;
+                if (id == ids.star) starCount++;
+            }
+        }
+        if (frogCount < difficulty + 1) spawnItem(ids.egg);
+        if (starCount < Math.floor(difficulty / 2 + 1) && starCount < frogCount) spawnItem(ids.star);
+    }
 
     updateGraphics();
 
@@ -642,6 +676,7 @@ function moveTo(startX, startY, endX, endY)
     {
         restartGame = true;
         dead = true;
+        clearTimeout(timerId);
         return ids.cirno;
     }
     return ids.wall;
