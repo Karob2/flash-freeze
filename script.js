@@ -56,6 +56,16 @@ var tileTypes = [
         name: "star",
         coll: false,
         push: false
+    },
+    {
+        name: "cirno2",
+        coll: false,
+        push: false
+    },
+    {
+        name: "egg",
+        coll: true,
+        push: true
     }
     ]
 
@@ -66,7 +76,9 @@ var ids = {
     ice: 3,
     cirno: 4,
     frog: 5,
-    star: 6
+    star: 6,
+    cirno2: 7,
+    egg: 8
 }
 
 var player = {};
@@ -86,6 +98,7 @@ var dirs = [ dir.up, dir.down, dir.left, dir.right ];
 var timerId;
 var restartGame = false;
 var dead = false;
+var charged = false;
 
 function createGame()
 {
@@ -319,15 +332,7 @@ function createLevel()
             }
         }
 
-        // Place star
-        while (true)
-        {
-            var ex = Math.floor(Math.random() * bounds.x);
-            var ey = Math.floor(Math.random() * bounds.y);
-            if (level[ey][ex] != 0) continue;
-            level[ey][ex] = ids.star;
-            break;
-        }
+        spawnItem(ids.star);
     }
 
     //timerId = setTimeout(gameTick, 1000);
@@ -342,24 +347,58 @@ function checkKey(e)
 
     var direction = null;
     e = e || window.event;
+    //alert(e.keyCode);
 
-    if (e.keyCode == '38') {
-        // up arrow
+    if (e.keyCode == '38' || e.keyCode == '69') {
         direction = dir.up;
+        e.preventDefault();
     }
-    else if (e.keyCode == '40') {
-        // down arrow
+    else if (e.keyCode == '40' || e.keyCode == '68') {
         direction = dir.down;
+        e.preventDefault();
     }
-    else if (e.keyCode == '37') {
-       // left arrow
-       direction = dir.left;
+    else if (e.keyCode == '37' || e.keyCode == '83') {
+        direction = dir.left;
+        e.preventDefault();
     }
-    else if (e.keyCode == '39') {
-       // right arrow
-       direction = dir.right;
+    else if (e.keyCode == '39' || e.keyCode == '70') {
+        direction = dir.right;
+        e.preventDefault();
     }
-
+    if (e.keyCode == '32') {
+        for (var j = player.y - 2; j <= player.y + 2; j++)
+        {
+            if (j < 0 || j >= bounds.y) continue;
+            for (var i = player.x - 2; i <= player.x + 2; i++)
+            {
+                if (i < 0 || i >= bounds.x) continue;
+                if (level[j][i] == ids.frog)
+                {
+                    level[j][i] = ids.ice;
+                    var div = levelElements[j][i];
+                    var id = ids.ice;
+                    var tx = id % 4 * 34 + 1;
+                    var ty = Math.floor(id / 4) * 34 + 1;
+                    div.style.backgroundPositionX = -tx + "px";
+                    div.style.backgroundPositionY = -ty + "px";
+                }
+                if (level[j][i] == 0)
+                {
+                    var div = levelElements[j][i];
+                    var id = ids.star;
+                    var tx = id % 4 * 34 + 1;
+                    var ty = Math.floor(id / 4) * 34 + 1;
+                    div.style.backgroundPositionX = -tx + "px";
+                    div.style.backgroundPositionY = -ty + "px";
+                }
+            }
+        }
+        document.getElementById("game").style.opacity = 0.5;
+        setTimeout(endFlash, 200);
+        charged = false;
+        level[player.y][player.x] = ids.cirno;
+        e.preventDefault();
+    }
     if (direction != null) updateGame(direction);
 }
 
@@ -387,10 +426,14 @@ function updateGame(direction)
         if (id == 0) doMove = true;
         else if (id == ids.star)
         {
+            //document.getElementById("game").style.opacity = 0.5;
+            //setTimeout(endFlash, 200);
+            charged = true;
+            level[player.y][player.x] = ids.cirno2;
             doMove = true;
             newStar = true;
         }
-        else if (id == ids.barrel || id == ids.ice)
+        else if (tileTypes[id].push == true)
         {
             var ttx = tx;
             var tty = ty;
@@ -401,7 +444,7 @@ function updateGame(direction)
                 if (ttx < 0 || ttx >= bounds.x) break;
                 if (tty < 0 || tty >= bounds.y) break;
                 var id2 = level[tty][ttx];
-                if (id2 == ids.barrel || id2 == ids.ice) continue;
+                if (tileTypes[id2].push == true) continue;
                 if (id2 != 0) break;
 
                 while (true)
@@ -422,6 +465,7 @@ function updateGame(direction)
         if (doMove)
         {
             level[ty][tx] = ids.cirno;
+            if (charged) level[ty][tx] = ids.cirno2;
             level[player.y][player.x] = 0;
             player.x = tx;
             player.y = ty;
@@ -473,14 +517,7 @@ function updateGame(direction)
 
     if (newStar)
     {
-        while (true)
-        {
-            var ex = Math.floor(Math.random() * bounds.x);
-            var ey = Math.floor(Math.random() * bounds.y);
-            if (level[ey][ex] != 0) continue;
-            level[ey][ex] = ids.star;
-            break;
-        }
+        spawnItem(ids.star);
     }
 
     updateGraphics();
@@ -587,11 +624,28 @@ function moveTo(startX, startY, endX, endY)
         live[endY][endX] = false;
         return id2;
     }
-    if (id2 == ids.cirno)
+    if (id2 == ids.cirno || id2 == ids.cirno2)
     {
         restartGame = true;
         dead = true;
         return ids.cirno;
     }
     return ids.wall;
+}
+
+function endFlash()
+{
+    document.getElementById("game").style.opacity = 1;
+}
+
+function spawnItem(type)
+{
+    while (true)
+    {
+        var ex = Math.floor(Math.random() * bounds.x);
+        var ey = Math.floor(Math.random() * bounds.y);
+        if (level[ey][ex] != 0) continue;
+        level[ey][ex] = type;
+        break;
+    }
 }
