@@ -399,6 +399,7 @@ function checkKey(e)
                     difficulty++;
                     if (difficulty >= 20)
                     {
+                        updateGraphics();
                         document.getElementById("alerts").style.visibility = "visible";
                         document.getElementById("game").style.opacity = 0.5;
                         dead = true;
@@ -442,7 +443,7 @@ function updateGame(direction)
     // Move player
     var tx = player.x + direction.x;
     var ty = player.y + direction.y;
-    if (tx >+ 0 && tx < bounds.x && ty >= 0 && ty < bounds.y)
+    if (tx >= 0 && tx < bounds.x && ty >= 0 && ty < bounds.y)
     {
         var doMove = false;
         id = level[ty][tx];
@@ -454,7 +455,7 @@ function updateGame(direction)
             charged = true;
             level[player.y][player.x] = ids.cirno2;
             doMove = true;
-            newStar = true;
+            //newStar = true;
         }
         else if (tileTypes[id].push == true)
         {
@@ -562,8 +563,11 @@ function updateGame(direction)
                 if (id == ids.star) starCount++;
             }
         }
-        if (frogCount < difficulty + 1) spawnItem(ids.egg);
-        if (starCount < Math.floor(difficulty / 2 + 1) && starCount < frogCount) spawnItem(ids.star);
+        //if (frogCount < difficulty + 1) spawnItem(ids.egg);
+        if (starCount < Math.min(Math.floor(difficulty / 2 + 1), 5) && starCount < frogCount) spawnItem(ids.star);
+
+        frogCount = Math.min(difficulty + 1 - frogCount, 2);
+        for (var n = 0; n < frogCount; n++) spawnItem(ids.egg);
     }
 
     updateGraphics();
