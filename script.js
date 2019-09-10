@@ -378,49 +378,7 @@ function checkKey(e)
     }
     if (e.keyCode == '32') {
         e.preventDefault();
-        if (dead == true) return;
-        if (!charged) return;
-
-        for (var j = player.y - 2; j <= player.y + 2; j++)
-        {
-            if (j < 0 || j >= bounds.y) continue;
-            for (var i = player.x - 2; i <= player.x + 2; i++)
-            {
-                if (i < 0 || i >= bounds.x) continue;
-                if (level[j][i] == ids.frog || level[j][i] == ids.egg)
-                {
-                    level[j][i] = ids.ice;
-                    var div = levelElements[j][i];
-                    var id = ids.ice;
-                    var tx = id % 4 * 34 + 1;
-                    var ty = Math.floor(id / 4) * 34 + 1;
-                    div.style.backgroundPositionX = -tx + "px";
-                    div.style.backgroundPositionY = -ty + "px";
-                    difficulty++;
-                    if (difficulty >= 20)
-                    {
-                        updateGraphics();
-                        document.getElementById("alerts").style.visibility = "visible";
-                        document.getElementById("game").style.opacity = 0.5;
-                        dead = true;
-                        clearTimeout(timerId);
-                    }
-                }
-                if (level[j][i] == 0)
-                {
-                    var div = levelElements[j][i];
-                    var id = ids.star;
-                    var tx = id % 4 * 34 + 1;
-                    var ty = Math.floor(id / 4) * 34 + 1;
-                    div.style.backgroundPositionX = -tx + "px";
-                    div.style.backgroundPositionY = -ty + "px";
-                }
-            }
-        }
-        document.getElementById("game").style.opacity = 0.5;
-        setTimeout(endFlash, 200);
-        charged = false;
-        level[player.y][player.x] = ids.cirno;
+        flashFreeze();
     }
     if (direction != null) updateGame(direction);
 }
@@ -678,10 +636,14 @@ function moveTo(startX, startY, endX, endY)
     }
     if (id2 == ids.cirno || id2 == ids.cirno2)
     {
-        restartGame = true;
-        dead = true;
-        clearTimeout(timerId);
-        return ids.cirno;
+        if (charged) flashFreeze();
+        else
+        {
+            restartGame = true;
+            dead = true;
+            clearTimeout(timerId);
+            return ids.cirno;
+        }
     }
     return ids.wall;
 }
@@ -701,4 +663,51 @@ function spawnItem(type)
         level[ey][ex] = type;
         break;
     }
+}
+
+function flashFreeze()
+{
+    if (dead == true) return;
+    if (!charged) return;
+
+    for (var j = player.y - 2; j <= player.y + 2; j++)
+    {
+        if (j < 0 || j >= bounds.y) continue;
+        for (var i = player.x - 2; i <= player.x + 2; i++)
+        {
+            if (i < 0 || i >= bounds.x) continue;
+            if (level[j][i] == ids.frog || level[j][i] == ids.egg)
+            {
+                level[j][i] = ids.ice;
+                var div = levelElements[j][i];
+                var id = ids.ice;
+                var tx = id % 4 * 34 + 1;
+                var ty = Math.floor(id / 4) * 34 + 1;
+                div.style.backgroundPositionX = -tx + "px";
+                div.style.backgroundPositionY = -ty + "px";
+                difficulty++;
+                if (difficulty >= 20)
+                {
+                    updateGraphics();
+                    document.getElementById("alerts").style.visibility = "visible";
+                    document.getElementById("game").style.opacity = 0.5;
+                    dead = true;
+                    clearTimeout(timerId);
+                }
+            }
+            if (level[j][i] == 0)
+            {
+                var div = levelElements[j][i];
+                var id = ids.star;
+                var tx = id % 4 * 34 + 1;
+                var ty = Math.floor(id / 4) * 34 + 1;
+                div.style.backgroundPositionX = -tx + "px";
+                div.style.backgroundPositionY = -ty + "px";
+            }
+        }
+    }
+    document.getElementById("game").style.opacity = 0.5;
+    setTimeout(endFlash, 200);
+    charged = false;
+    level[player.y][player.x] = ids.cirno;
 }
