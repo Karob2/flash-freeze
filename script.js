@@ -218,6 +218,26 @@ function findPath(startX, startY, endX, endY)
                 obstacles[j][i] = 1;
         }
     }
+
+    var dx = Math.abs(endX - startX);
+    var dy = Math.abs(endY - startY);
+    var weightCases = [
+        [startX - 1, startY, dx, dy],
+        [startX + 1, startY, dx, dy],
+        [startX, startY - 1, dy, dx],
+        [startX, startY + 1, dy, dx]
+        ]
+    for (var n = 0; n < 4; n++)
+    {
+        var tx = weightCases[n][0];
+        var ty = weightCases[n][1];
+        var d1 = weightCases[n][2];
+        var d2 = weightCases[n][3];
+        if (tx < 0 || tx >= bounds.x || ty < 0 || ty >= bounds.y) continue;
+        if (obstacles[ty][tx] == 0) continue;
+        if (d1 < d2) obstacles[ty][tx] = 5;
+    }
+
     var graph = new Graph(obstacles);
     var start = graph.grid[startY][startX];
     var end = graph.grid[endY][endX];
