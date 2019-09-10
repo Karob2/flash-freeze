@@ -135,6 +135,10 @@ function createGame()
         var ty = Math.floor(tiy - th / 2);
         var rem1 = Math.floor(Math.random() * 4);
         var rem2 = Math.floor(Math.random() * 4);
+        if (tx <= 0) rem1 = 1;
+        if (tx + tw >= bounds.x) rem1 = 0;
+        if (ty <= 0) rem2 = 3;
+        if (ty + th >= bounds.y) rem2 = 2;
         for (var j = ty - 1; j < ty + th + 1; j++)
         {
             if (j < 0 || j >= bounds.y) continue;
@@ -169,7 +173,8 @@ function createGame()
                 }
                 else if ((borderY == true || borderX == true) && borderXOOB == false && borderYOOB == false)
                 {
-                    level[j][i] = ids.wall;
+                    if (Math.random() < 0.1) level[j][i] = ids.ice;
+                    else level[j][i] = ids.wall;
                 }
                 else
                 {
@@ -179,12 +184,69 @@ function createGame()
         }
     }
 
-    // Place boxes
-    /*
+    // Place barrels
+    var tix = Math.random() * bounds.x;
+    var tiy = Math.random() * bounds.y;
+    var phi = (Math.sqrt(5) - 1) / 2;
+    var tick = 0;
     for (var n = 0; n < 8; n++)
     {
-    */
+        if (tick == 0)
+        {
+            tick = 1;
+            tix = (tix + phi * bounds.x);
+            if (tix >= bounds.x) tix -= bounds.x;
+        }
+        else
+        {
+            tick = 0;
+            tiy = (tiy + phi * bounds.y);
+            if (tiy >= bounds.y) tiy -= bounds.y;
+        }
+        var tw = Math.floor(Math.random() * 2) + 1;
+        var th = Math.floor(Math.random() * 2) + 1;
+        if (tw == 2 && th == 2) tw = 1;
+        var tx = Math.floor(tix - tw / 2);
+        var ty = Math.floor(tiy - th / 2);
+        for (var j = ty; j < ty + th; j++)
+        {
+            if (j < 0 || j >= bounds.y) continue;
+            for (var i = tx; i < tx + tw; i++)
+            {
+                if (i < 0 || i >= bounds.x) continue;
+                if (level[j][i] == ids.air)
+                    level[j][i] = ids.barrel;
+            }
+        }
+    }
 
+    // Place player base
+    {
+        var size = Math.random() * 3;
+        var tw = Math.floor(6 + size);
+        var th = Math.floor(5 + size);
+        var tx = Math.floor(bounds.x / 2 - Math.random() * tw);
+        var ty = Math.floor(bounds.y / 2 - Math.random() * th);
+        for (var j = ty; j < ty + th; j++)
+        {
+            if (j < 0 || j >= bounds.y) continue;
+            for (var i = tx; i < tx + tw; i++)
+            {
+                if (i < 0 || i >= bounds.x) continue;
+                if (i == tx || i == tx + tw - 1 || j == ty || j == ty + th - 1)
+                {
+                    if (level[j][i] == 0)
+                        level[j][i] = ids.ice;
+                }
+                else
+                {
+                    level[j][i] = 0;
+                }
+            }
+        }
+    }
+
+    // Create visual HTML elements
     document.getElementById("game").style.width = bounds.x * 32;
     var img = document.createElement("IMG");
     img.src = "sprites.png";
