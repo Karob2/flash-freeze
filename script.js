@@ -99,6 +99,8 @@ var timerId;
 var restartGame = false;
 var dead = false;
 var charged = false;
+var tickCount = 0;
+var difficulty = 1;
 
 function createGame()
 {
@@ -159,6 +161,8 @@ function createGame()
 function createLevel()
 {
     document.getElementById("game").style.opacity = 1;
+    tickCount = 0;
+    difficulty = 1;
 
     // Randomly generate new level
     level = [];
@@ -381,6 +385,7 @@ function checkKey(e)
                     var ty = Math.floor(id / 4) * 34 + 1;
                     div.style.backgroundPositionX = -tx + "px";
                     div.style.backgroundPositionY = -ty + "px";
+                    difficulty++;
                 }
                 if (level[j][i] == 0)
                 {
@@ -412,6 +417,7 @@ function updateGame(direction)
 {
     clearTimeout(timerId);
     timerId = setTimeout(gameTick, 1000);
+    tickCount++;
 
     var id;
     var newStar = false;
@@ -520,6 +526,12 @@ function updateGame(direction)
         spawnItem(ids.star);
     }
 
+    /*
+    if (tickCount > 30)
+    {
+        tickCount = 0;
+        */
+
     updateGraphics();
 
     if (restartGame == true)
@@ -547,6 +559,8 @@ function updateGraphics()
             live[j][i] = true;
         }
     }
+
+    document.getElementById("score").innerHTML = "Level: " + difficulty + "/20";
 }
 
 function findPath(startX, startY, endX, endY)

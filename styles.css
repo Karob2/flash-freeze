@@ -13,3 +13,12 @@ body {
 #case {
     background-color: white;
 }
+
+#info {
+    background-color: #333;
+    height: 32px;
+    font-family: "Arial Black", Gadget, sans-serif;
+    font-size: 28px;
+    color: #999;
+    padding-left: 16px;
+}
