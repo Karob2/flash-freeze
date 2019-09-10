@@ -84,8 +84,106 @@ var dirs = [ dir.up, dir.down, dir.left, dir.right ];
 
 function createGame()
 {
+    // Use pre-existing level
     bounds.x = level[0].length;
     bounds.y = level.length;
+
+    // Randomly generate new level
+    bounds.x = 30;
+    bounds.y = 18;
+    level = [];
+    for (var j = 0; j < bounds.y; j++)
+    {
+        level[j] = [];
+        for (var i = 0; i < bounds.x; i++)
+        {
+            level[j][i] = 0;
+        }
+    }
+
+    // Place walls
+    var tix = Math.random() * bounds.x;
+    var tiy = Math.random() * bounds.y;
+    var phi = (Math.sqrt(5) - 1) / 2;
+    var tick = 0;
+    for (var n = 0; n < 16; n++)
+    {
+        //var shrink = (32 - n) / 32;
+        /*
+        var tw = Math.floor(Math.random() * 12 * shrink) + 1;
+        var th = Math.floor(Math.random() * 9 * shrink) + 1;
+        var tx = Math.floor(Math.random() * (bounds.x - tw));
+        var ty = Math.floor(Math.random() * (bounds.y - th));
+        */
+        if (tick == 0)
+        {
+            tick = 1;
+            tix = (tix + phi * bounds.x);
+            if (tix >= bounds.x) tix -= bounds.x;
+        }
+        else
+        {
+            tick = 0;
+            tiy = (tiy + phi * bounds.y);
+            if (tiy >= bounds.y) tiy -= bounds.y;
+        }
+        //var tw = Math.floor(12 * shrink) + 1;
+        //var th = Math.floor(9 * shrink) + 1;
+        var tw = Math.floor(Math.random() * 6 + 6) + 1;
+        var th = Math.floor(Math.random() * 5 + 5) + 1;
+        var tx = Math.floor(tix - tw / 2);
+        var ty = Math.floor(tiy - th / 2);
+        var rem1 = Math.floor(Math.random() * 4);
+        var rem2 = Math.floor(Math.random() * 4);
+        for (var j = ty - 1; j < ty + th + 1; j++)
+        {
+            if (j < 0 || j >= bounds.y) continue;
+            var borderY = false;
+            var borderYOOB = false;
+            if (j == ty || j == ty + th - 1) borderY = true;
+            if (j < ty || j > ty + th - 1) borderYOOB = true;
+            for (var i = tx - 1; i < tx + tw + 1; i++)
+            {
+                if (i < 0 || i >= bounds.x) continue;
+                var borderX = false;
+                var borderXOOB = false;
+                if (i == tx || i == tx + tw - 1) borderX = true;
+                if (i < tx || i > tx + tw - 1) borderXOOB = true;
+                /*
+                if (borderXOOB == true || borderYOOB == true)
+                {
+                    level[j][i] = ids.star;
+                }
+                */
+                if (rem1 != 0 && rem2 != 0 && i == tx - 1 || rem1 != 1 && rem2 != 1 && i == tx + tw || rem1 != 2 && rem2 != 2 && j == ty - 1 || rem1 != 3 && rem2 != 3 && j == ty + tw)
+                {
+                    level[j][i] = 0;
+                }
+                else if (rem1 == 0 && i == tx || rem1 == 1 && i == tx + tw - 1 || rem1 == 2 && j == ty || rem1 == 3 && j == ty + th - 1)
+                {
+                    level[j][i] = 0;
+                }
+                else if (rem2 == 0 && i == tx || rem2 == 1 && i == tx + tw - 1 || rem2 == 2 && j == ty || rem2 == 3 && j == ty + th - 1)
+                {
+                    level[j][i] = 0;
+                }
+                else if ((borderY == true || borderX == true) && borderXOOB == false && borderYOOB == false)
+                {
+                    level[j][i] = ids.wall;
+                }
+                else
+                {
+                    level[j][i] = 0;
+                }
+            }
+        }
+    }
+
+    // Place boxes
+    /*
+    for (var n = 0; n < 8; n++)
+    {
+    */
 
     document.getElementById("game").style.width = bounds.x * 32;
     var img = document.createElement("IMG");
