@@ -102,6 +102,7 @@ var charged = false;
 var tickCount = 0;
 var difficulty = 1;
 var godMode = false;
+var alterEgg = 0;
 
 var audio = {
     current: 0,
@@ -175,6 +176,7 @@ function createLevel()
     document.getElementById("game").style.opacity = 1;
     tickCount = 0;
     difficulty = 1;
+    alterEgg = 0;
 
     // Randomly generate new level
     level = [];
@@ -534,6 +536,7 @@ function updateGame(direction)
         tickCount = 0;
         var frogCount = 0;
         var starCount = 0;
+        var iceCount = 0;
         for (var j = 0; j < bounds.y; j++)
         {
             for (var i = 0; i < bounds.x; i++)
@@ -547,6 +550,7 @@ function updateGame(direction)
                 }
                 if (id == ids.frog) frogCount++;
                 if (id == ids.star) starCount++;
+                if (id == ids.ice) iceCount++;
             }
         }
         //if (frogCount < difficulty + 1) spawnItem(ids.egg);
@@ -554,6 +558,27 @@ function updateGame(direction)
 
         frogCount = Math.min(difficulty + 1 - frogCount, 2);
         for (var n = 0; n < frogCount; n++) spawnItem(ids.egg);
+
+        /*
+        if (iceCount > 30)
+        {
+            var chosen = Math.floor(Math.random() * iceCount) + 1;
+            for (var j = 0; j < bounds.y; j++)
+            {
+                for (var i = 0; i < bounds.x; i++)
+                {
+                    id = level[j][i];
+                    if (id == ids.ice) chosen--;
+                    if (chosen == 0)
+                    {
+                        level[j][i] = ids.egg;
+                        break;
+                    }
+                }
+                if (chosen == 0) break;
+            }
+        }
+        */
     }
 
     updateGraphics();
@@ -693,13 +718,44 @@ function spawnItem(type)
     }
 }
 
+function spawnIceItem(type)
+{
+    var iceCount = 0;
+    var id;
+    for (var j = 0; j < bounds.y; j++)
+    {
+        for (var i = 0; i < bounds.x; i++)
+        {
+            id = level[j][i];
+            if (id == ids.ice) iceCount++;
+        }
+    }
+
+    var chosen = Math.floor(Math.random() * iceCount) + 1;
+    for (var j = 0; j < bounds.y; j++)
+    {
+        for (var i = 0; i < bounds.x; i++)
+        {
+            id = level[j][i];
+            if (id == ids.ice) chosen--;
+            if (chosen == 0)
+            {
+                level[j][i] = type;
+                break;
+            }
+        }
+        if (chosen == 0) break;
+    }
+}
+
 function flashFreeze()
 {
     if (dead == true) return;
-    if (!charged) return;
+    if (!charged && !godMode) return;
 
     playSound("ender.wav");
 
+    var oldDifficulty = difficulty;
     for (var j = player.y - 2; j <= player.y + 2; j++)
     {
         if (j < 0 || j >= bounds.y) continue;
@@ -741,6 +797,13 @@ function flashFreeze()
     setTimeout(endFlash, 200);
     charged = false;
     level[player.y][player.x] = ids.cirno;
+    if (difficulty != oldDifficulty && difficulty >= 10)
+    {
+        alterEgg++;
+        if (alterEgg > 1) alterEgg = 0;
+        //if (alterEgg == 0) spawnIceItem(ids.barrel);
+        if (alterEgg == 1) spawnIceItem(ids.egg);
+    }
 }
 
 var footAlter = 0;
