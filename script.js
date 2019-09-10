@@ -173,7 +173,7 @@ function createGame()
                 }
                 else if ((borderY == true || borderX == true) && borderXOOB == false && borderYOOB == false)
                 {
-                    if (Math.random() < 0.1) level[j][i] = ids.ice;
+                    if (Math.random() < 0.1) level[j][i] = ids.barrel;
                     else level[j][i] = ids.wall;
                 }
                 else
@@ -243,6 +243,33 @@ function createGame()
                     level[j][i] = 0;
                 }
             }
+        }
+        player.x = Math.floor(Math.random() * (tw - 2)) + tx + 1;
+        player.y = Math.floor(Math.random() * (th - 2)) + ty + 1;
+        level[player.y][player.x] = ids.cirno;
+
+        // Place enemies
+        for (var n = 0; n < 2; n++)
+        {
+            while (true)
+            {
+                var ex = Math.floor(Math.random() * bounds.x);
+                var ey = Math.floor(Math.random() * bounds.y);
+                if (ex >= tx && ex < tx + th && ey >= ty && ey < ty + th) continue;
+                if (level[ey][ex] != 0) continue;
+                level[ey][ex] = ids.frog;
+                break;
+            }
+        }
+
+        // Place star
+        while (true)
+        {
+            var ex = Math.floor(Math.random() * bounds.x);
+            var ey = Math.floor(Math.random() * bounds.y);
+            if (level[ey][ex] != 0) continue;
+            level[ey][ex] = ids.star;
+            break;
         }
     }
 
@@ -314,6 +341,7 @@ function checkKey(e)
 function updateGame(direction)
 {
     var id;
+    var newStar = false;
 
     // Move player
     var tx = player.x + direction.x;
@@ -323,7 +351,11 @@ function updateGame(direction)
         var doMove = false;
         id = level[ty][tx];
         if (id == 0) doMove = true;
-        else if (id == ids.star) doMove = true;
+        else if (id == ids.star)
+        {
+            doMove = true;
+            newStar = true;
+        }
         else if (id == ids.barrel || id == ids.ice)
         {
             var ttx = tx;
@@ -373,7 +405,7 @@ function updateGame(direction)
                 var result = findPath(i, j, player.x, player.y);
                 if (result.length > 0 && (result.length <= 10 || Math.abs(player.x - i) + Math.abs(player.y - j) < 5))
                 {
-                    moveTo(i, j, result[0].y, result[0].x);
+                    if (moveTo(i, j, result[0].y, result[0].x) == ids.star) newStar = true;
                 }
                 else
                 {
@@ -384,9 +416,21 @@ function updateGame(direction)
                     if (dir == 1) ty++;
                     if (dir == 2) tx--;
                     if (dir == 3) tx++;
-                    moveTo(i, j, tx, ty);
+                    if (moveTo(i, j, tx, ty) == ids.star) newStar = true;
                 }
             }
+        }
+    }
+
+    if (newStar)
+    {
+        while (true)
+        {
+            var ex = Math.floor(Math.random() * bounds.x);
+            var ey = Math.floor(Math.random() * bounds.y);
+            if (level[ey][ex] != 0) continue;
+            level[ey][ex] = ids.star;
+            break;
         }
     }
 
@@ -473,11 +517,13 @@ function findPath(startX, startY, endX, endY)
 function moveTo(startX, startY, endX, endY)
 {
     var id = level[startY][startX];
-    if (endX < 0 || endX >= bounds.x || endY < 0 || endY >= bounds.y) return;
-    if (level[endY][endX] == 0)
+    var id2 = level[endY][endX];
+    if (endX < 0 || endX >= bounds.x || endY < 0 || endY >= bounds.y) return 0;
+    if (id2 == 0 || id2 == ids.star)
     {
         level[startY][startX] = 0;
         level[endY][endX] = id;
         live[endY][endX] = false;
+        return id2;
     }
 }
