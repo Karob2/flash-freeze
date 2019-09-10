@@ -5,7 +5,11 @@ body {
 }
 
 #game {
-    border: 1px solid white;
-    background-color: gray;
+    /*border: 1px solid white;*/
+    background-color: black;
     background: url("bg.png") repeat;
+}
+
+#case {
+    background-color: white;
 }

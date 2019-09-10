@@ -1,0 +1,272 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Flash Freeze</title>
+    <style>
+    #wrapper {
+        width: 1280px;
+        /*white-space: pre-wrap;*/
+        margin: auto;
+        background-color: #444;
+    }
+    #description {
+        padding-top: 0px;
+        padding-bottom: 40px;
+        padding-left: 40px;
+        padding-right: 40px;
+        margin-top: 0px;
+        font-family: "Arial";
+    }
+    body {
+        background-color: #222;
+        color: #ccc;
+    }
+    a:link, a:visited {
+        color: #80c0ff;
+    }
+    a:hover, a:active {
+        color: #ffffff;
+    }
+/*
+body, html {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+}
+iframe {
+    width: 500px;
+    height: 500px;
+}
+*/
+    iframe.f1x {
+        width: 960px;
+        height: 576px;
+        margin-top: 40px;
+        margin-bottom: 40px;
+        margin-left: 25%;
+        margin-right: 25%;
+    }
+    iframe.f2x {
+        width: 960px;
+        height: 576px;
+    }
+    iframe.fullScreen {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+    </style>
+</head>
+<body>
+    <script>
+    var lastRes = "f2x";
+    function getfullscreenelement(){
+        return document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement
+    }
+    function getonfullscreenevt(){
+        var root = document.documentElement
+        var fullscreenevts = {
+            'requestFullscreen': 'onfullscreenchange',
+            'webkitRequestFullscreen': 'onwebkitfullscreenchange',
+            'mozRequestFullScreen': 'onmozfullscreenchange',
+            'msRequestFullscreen': 'onmsfullscreenchange'
+        }
+         
+        for (var method in fullscreenevts){
+            if (root[method]){ // if root document object supports this requestFullscreen method
+                return fullscreenevts[method] // return corresponding onfullscreenchange event string
+            }
+        }
+        return undefined
+    }
+    //usage: var globalonfullscreenchange = getonfullscreenevt(); document[globalonfullscreenchange] = function(){...}
+    var globalonfullscreenchange = getonfullscreenevt();
+    document[globalonfullscreenchange] = pageResized;
+    function pageResized() {
+        console.log('fullscreen: ' + !(getfullscreenelement() == null));
+        if (getfullscreenelement() == null) {
+            document.getElementsByTagName("iframe")[0].className = lastRes;
+        }
+    }
+    function requestFullScreen(element) {
+        // Supports most browsers and their versions.
+        var requestMethod = element.requestFullScreen || element.webkitRequestFullScreen || element.mozRequestFullScreen || element.msRequestFullscreen;
+
+        if (requestMethod) { // Native full screen.
+            requestMethod.call(element);
+        } else if (typeof window.ActiveXObject !== "undefined") { // Older IE.
+            var wscript = new ActiveXObject("WScript.Shell");
+            if (wscript !== null) {
+                wscript.SendKeys("{F11}");
+            }
+        }
+    }
+
+    function makeFullScreen() {
+        lastRes = document.getElementsByTagName("iframe")[0].className;
+        document.getElementsByTagName("iframe")[0].className = "fullScreen";
+        var elem = document.body;
+        requestFullScreen(elem);
+        setFocus();
+    }
+    function make1x() {
+        document.getElementsByTagName("iframe")[0].className = "f1x";
+        setFocus();
+    }
+    function make2x() {
+        document.getElementsByTagName("iframe")[0].className = "f2x";
+        setFocus();
+    }
+    function killGame() {
+        document.getElementById("gameframe").src = "";
+    }
+    function startGame() {
+        document.getElementById("gameframe").src = "index.html";
+        setFocus();
+    }
+    function reloadMap() {
+        document.getElementById("gameframe").contentWindow.reloadMap();
+        setFocus();
+    }
+    function godmode() {
+        document.getElementById("gameframe").contentWindow.godMode = true;
+        setFocus();
+    }
+    function muteMusic() {
+        document.getElementById("gameframe").contentWindow.stopMusic();
+        setFocus();
+    }
+    function playEnv() {
+        document.getElementById("gameframe").contentWindow.PIXI.sound.play('env_crickets', {loop:true});
+        setFocus();
+    }
+    function stopEnv() {
+        document.getElementById("gameframe").contentWindow.PIXI.sound.stop('env_crickets');
+        setFocus();
+    }
+    function bossFight() {
+        var gf = document.getElementById("gameframe").contentWindow;
+        gf.player.px = gf.levelProperties.width - gf.levelProperties.grid * 11.5;
+        gf.player.py = gf.levelProperties.height - gf.levelProperties.grid - 1;
+        setFocus();
+    }
+    function nextCheckpoint(direction) {
+        var gf = document.getElementById("gameframe").contentWindow;
+        var cpdist, cpydist;
+        var cpdistMax = 9999999;
+        var cpnMax = -1;
+        for (var n = 0; n < gf.checkpoints.children.length; n++) {
+            cpdist = direction * (gf.checkpoints.children[n].x - gf.player.px) - gf.levelProperties.grid;
+            cpydist = direction * (gf.player.py - gf.checkpoints.children[n].y) - gf.levelProperties.grid;
+            if ((cpdist > 0 || cpydist > 0 && cpdist > -gf.levelProperties.grid * 2) && cpdist < cpdistMax) {
+                cpnMax = n;
+                cpdistMax = cpdist;
+            }
+        }
+        if (cpnMax != -1) {
+            gf.player.px = gf.checkpoints.children[cpnMax].x + gf.levelProperties.grid / 2;
+            gf.player.py = gf.checkpoints.children[cpnMax].y + gf.levelProperties.grid - 1;
+        }
+        setFocus();
+    }
+    function openBarriers() {
+        var gf = document.getElementById("gameframe").contentWindow;
+        gf.killCounter.kills = 50;
+        gf.updateBarriers();
+        setFocus();
+    }
+    </script>
+    <div id="wrapper">
+        <iframe src="index.html" id="gameframe" class="f2x" scrolling="no" frameborder="0" style=""></iframe><br/>
+        <button onclick="make1x()">Size 1x</button>
+        <button onclick="make2x()">Size 2x</button>
+        <button onclick="makeFullScreen()">Fullscreen</button>
+        <button onclick="killGame()">Stop Game</button>
+        <button onclick="startGame()">Restart Game</button>
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <button onclick="nextCheckpoint(-1)">Previous Checkpoint</button>
+        <button onclick="nextCheckpoint(1)">Next Checkpoint</button>
+        <button onclick="bossFight()">Skip to Boss</button>
+        <button onclick="godmode()">God Mode</button>
+        <button onclick="openBarriers()">Open Barriers</button>
+        <br>
+        <button onclick="reloadMap()">Reload Map</button>
+        <button onclick="muteMusic()">Stop Music</button>
+        <!--
+        <button onclick="playEnv()">Play Crickets</button>
+        <button onclick="stopEnv()">Stop Crickets</button>
+        -->
+        <div id="description">
+            <h1>Sakata Mountain</h1>
+
+            <p>Originally created for Touhou Game Jam 2, using PixiJS.</p>
+
+            <p>Nemuno Sakata just wants to gather some vegetables, but there's trouble on the mountain. Jump and slash your way around a twisting level with enemies throughout and a mystery boss at the end.</p>
+
+            <p>This is a fan work of the Touhou Project and is not associated with the original creators.</p>
+
+            <h2>Game Instructions</h2>
+
+            <ul>
+            <li>Avoid enemy projectiles. (Some projectiles can be destroyed with your melee attack, depending on difficulty mode.)</li>
+            <li>Activate checkpoints along the way. (You are immune to damage while standing on checkpoints.)</li>
+            <li>The screen shows health (top-left), score (top-right), and time elapsed in seconds (bottom-left).</li>
+            <li>The ending dialog depends on your score (below 31, 31-40, or 41).</li>
+            </ul>
+
+            <h3>Controls</h3>
+
+            <ul>
+            <li><b>Move left:</b> Left Arrow or A</li>
+            <li><b>Move right:</b> Right Arrow or D</li>
+            <li><b>Look up:</b> Up Arrow or W</li>
+            <li><b>Look down:</b> Down Arrow or S</li>
+            <li><b>Attack:</b> J, Z, or 4</li>
+            <li><b>Jump:</b> K, X, or 3</li>
+            <li><b>Drop down:</b> Look down + Jump</li>
+            </ul><ul>
+            <li><b>Respawn:</b> Hold R</li>
+            <li><b>Text skip:</b> Semicolon, V, or 1</li>
+            <li><b>Pause:</b> Escape or P</li>
+            </ul>
+
+            <h2>Credits</h2>
+
+            <p>Music
+            <ul>
+            <li><b>Arranged and sequenced by:</b> <a href="https://soundcloud.com/krichotomy">Karob</a></li>
+            <li><b>Original:</b> <a href="https://kourindou.exblog.jp/">ZUN</a></li>
+            </ul>
+            </p>
+
+            <!--
+            <p>The background audio "crickets.mp3" is a derivative of "rbh crickets suburb night1.wav" by RHumphries, which is licensed under CC BY 3.0.
+            <ul>
+            <li><b>Source:</b> <a href="https://freesound.org/people/RHumphries/sounds/1053/">https://freesound.org/people/RHumphries/sounds/1053/</a></li>
+            <li><b>License:</b> <a href="https://creativecommons.org/licenses/by/3.0/">https://creativecommons.org/licenses/by/3.0/</a></li>
+            </ul>
+            </p>
+            -->
+
+            <p>Font: Pixellari by Zacchary Dempsey-Plante.
+            <ul>
+            <li><b>Source:</b> <a href="https://www.dafont.com/pixellari.font">https://www.dafont.com/pixellari.font</a></li>
+            <li><b>License:</b> Free use as long as author is credited.</li>
+            </p>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', setFocus);
+        function setFocus() {
+            var gameframe = document.getElementById('gameframe');
+            gameframe.focus();
+            if (document.activeElement != gameframe) {
+                window.setTimeout(setFocus, 1000);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -84,16 +84,70 @@ var dir = {
 var dirs = [ dir.up, dir.down, dir.left, dir.right ];
 
 var timerId;
+var restartGame = false;
+var dead = false;
 
 function createGame()
 {
     // Use pre-existing level
     bounds.x = level[0].length;
     bounds.y = level.length;
+    for (var j = 0; j < bounds.y; j++)
+    {
+        for (var i = 0; i < bounds.x; i++)
+        {
+            if (level[j][i] == ids.cirno)
+            {
+                player.x = i;
+                player.y = j;
+            }
+        }
+    }
 
-    // Randomly generate new level
+    // Actually, start a new one
     bounds.x = 30;
     bounds.y = 18;
+
+    // Create visual HTML elements
+    document.getElementById("game").style.width = bounds.x * 32;
+    var img = document.createElement("IMG");
+    img.src = "sprites.png";
+    for (var j = 0; j < bounds.y; j++)
+    {
+        live[j] = [];
+        obstacles[j] = [];
+
+        levelElements[j] = [];
+        var row = document.createElement("DIV");
+        for (var i = 0; i < bounds.x; i++)
+        {
+            var div = document.createElement("DIV");
+            div.style.width = "32px";
+            div.style.height = "32px";
+            div.style.backgroundImage = "url(sprites.png)";
+            /*
+            var id = level[j][i];
+            var tx = id % 4 * 34 + 1;
+            var ty = Math.floor(id / 4) * 34 + 1;
+            div.style.backgroundPositionX = -tx + "px";
+            div.style.backgroundPositionY = -ty + "px";
+            */
+            div.style.display = "inline-block";
+            row.appendChild(div);
+            levelElements[j][i] = div;
+        }
+        document.getElementById("game").appendChild(row);
+    }
+
+    createLevel();
+    updateGraphics();
+}
+
+function createLevel()
+{
+    document.getElementById("game").style.opacity = 1;
+
+    // Randomly generate new level
     level = [];
     for (var j = 0; j < bounds.y; j++)
     {
@@ -276,50 +330,16 @@ function createGame()
         }
     }
 
-    // Create visual HTML elements
-    document.getElementById("game").style.width = bounds.x * 32;
-    var img = document.createElement("IMG");
-    img.src = "sprites.png";
-    for (var j = 0; j < bounds.y; j++)
-    {
-        live[j] = [];
-        obstacles[j] = [];
-
-        levelElements[j] = [];
-        var row = document.createElement("DIV");
-        for (var i = 0; i < bounds.x; i++)
-        {
-            live[j][i] = true;
-
-            var div = document.createElement("DIV");
-            div.style.width = "32px";
-            div.style.height = "32px";
-            div.style.backgroundImage = "url(sprites.png)";
-            var id = level[j][i];
-            var tx = id % 4 * 34 + 1;
-            var ty = Math.floor(id / 4) * 34 + 1;
-            div.style.backgroundPositionX = -tx + "px";
-            div.style.backgroundPositionY = -ty + "px";
-            div.style.display = "inline-block";
-            row.appendChild(div);
-            levelElements[j][i] = div;
-
-            if (id == ids.cirno)
-            {
-                player.x = i;
-                player.y = j;
-            }
-        }
-        document.getElementById("game").appendChild(row);
-    }
-
-    timerId = setTimeout(gameTick, 1000);
+    //timerId = setTimeout(gameTick, 1000);
+    gameTick();
 }
 
 document.onkeydown = checkKey;
 
 function checkKey(e)
 {
+    if (dead == true) return;
+
     var direction = null;
     e = e || window.event;
 
@@ -345,6 +365,7 @@ function checkKey(e)
 
 function gameTick()
 {
+    dead = false;
     updateGame(dir.none);
 }
 
@@ -424,12 +445,27 @@ function updateGame(direction)
                 {
                     tx = i;
                     ty = j;
-                    var dir = Math.floor(Math.random() * 4);
-                    if (dir == 0) ty--;
-                    if (dir == 1) ty++;
-                    if (dir == 2) tx--;
-                    if (dir == 3) tx++;
-                    if (moveTo(i, j, tx, ty) == ids.star) newStar = true;
+                    var d = Math.floor(Math.random() * 4);
+                    var res = moveTo(i, j, tx + dirs[d].x, ty + dirs[d].y);
+                    if (res == ids.wall)
+                    {
+                        d++;
+                        if (d > 3) d -= 4;
+                        res = moveTo(i, j, tx + dirs[d].x, ty + dirs[d].y);
+                    }
+                    if (res == ids.wall)
+                    {
+                        d++;
+                        if (d > 3) d -= 4;
+                        res = moveTo(i, j, tx + dirs[d].x, ty + dirs[d].y);
+                    }
+                    if (res == ids.wall)
+                    {
+                        d++;
+                        if (d > 3) d -= 4;
+                        res = moveTo(i, j, tx + dirs[d].x, ty + dirs[d].y);
+                    }
+                    if (res == ids.star) newStar = true;
                 }
             }
         }
@@ -447,7 +483,19 @@ function updateGame(direction)
         }
     }
 
-    // Update graphics
+    updateGraphics();
+
+    if (restartGame == true)
+    {
+        restartGame = false;
+        clearTimeout(timerId);
+        setTimeout(createLevel, 2000);
+        document.getElementById("game").style.opacity = 0.5;
+    }
+}
+
+function updateGraphics()
+{
     for (var j = 0; j < bounds.y; j++)
     {
         for (var i = 0; i < bounds.x; i++)
@@ -530,7 +578,7 @@ function findPath(startX, startY, endX, endY)
 function moveTo(startX, startY, endX, endY)
 {
     var id = level[startY][startX];
-    if (endX < 0 || endX >= bounds.x || endY < 0 || endY >= bounds.y) return 0;
+    if (endX < 0 || endX >= bounds.x || endY < 0 || endY >= bounds.y) return ids.wall;
     var id2 = level[endY][endX];
     if (id2 == 0 || id2 == ids.star)
     {
@@ -539,4 +587,11 @@ function moveTo(startX, startY, endX, endY)
         live[endY][endX] = false;
         return id2;
     }
+    if (id2 == ids.cirno)
+    {
+        restartGame = true;
+        dead = true;
+        return ids.cirno;
+    }
+    return ids.wall;
 }
