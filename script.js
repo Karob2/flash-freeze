@@ -101,6 +101,7 @@ var dead = false;
 var charged = false;
 var tickCount = 0;
 var difficulty = 1;
+var godMode = false;
 
 var audio = {
     current: 0,
@@ -371,6 +372,14 @@ function checkKey(e)
         return;
     }
 
+    if (e.keyCode == '67') {
+        e.preventDefault();
+        document.getElementById("alerts").style.visibility = "hidden";
+        document.getElementById("game").style.opacity = 1;
+        gameTick();
+        return;
+    }
+
     if (e.keyCode == '38' || e.keyCode == '69') {
         if (dead == false) direction = dir.up;
         e.preventDefault();
@@ -400,6 +409,7 @@ function checkKey(e)
 
 function gameTick()
 {
+    //playSound("p.wav");
     dead = false;
     updateGame(dir.none);
 }
@@ -654,7 +664,7 @@ function moveTo(startX, startY, endX, endY)
     if (id2 == ids.cirno || id2 == ids.cirno2)
     {
         if (charged) flashFreeze();
-        else
+        else if (godMode == false)
         {
             playSound("die.wav");
             restartGame = true;
@@ -707,7 +717,7 @@ function flashFreeze()
                 div.style.backgroundPositionX = -tx + "px";
                 div.style.backgroundPositionY = -ty + "px";
                 difficulty++;
-                if (difficulty >= 20)
+                if (difficulty == 20)
                 {
                     updateGraphics();
                     document.getElementById("alerts").style.visibility = "visible";

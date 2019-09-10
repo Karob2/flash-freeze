@@ -105,21 +105,6 @@ iframe {
         }
     }
 
-    function makeFullScreen() {
-        lastRes = document.getElementsByTagName("iframe")[0].className;
-        document.getElementsByTagName("iframe")[0].className = "fullScreen";
-        var elem = document.body;
-        requestFullScreen(elem);
-        setFocus();
-    }
-    function make1x() {
-        document.getElementsByTagName("iframe")[0].className = "f1x";
-        setFocus();
-    }
-    function make2x() {
-        document.getElementsByTagName("iframe")[0].className = "f2x";
-        setFocus();
-    }
     function killGame() {
         document.getElementById("gameframe").src = "";
     }
@@ -127,126 +112,46 @@ iframe {
         document.getElementById("gameframe").src = "index.html";
         setFocus();
     }
-    function reloadMap() {
-        document.getElementById("gameframe").contentWindow.reloadMap();
-        setFocus();
-    }
     function godmode() {
         document.getElementById("gameframe").contentWindow.godMode = true;
         setFocus();
     }
-    function muteMusic() {
-        document.getElementById("gameframe").contentWindow.stopMusic();
-        setFocus();
-    }
-    function playEnv() {
-        document.getElementById("gameframe").contentWindow.PIXI.sound.play('env_crickets', {loop:true});
-        setFocus();
-    }
-    function stopEnv() {
-        document.getElementById("gameframe").contentWindow.PIXI.sound.stop('env_crickets');
-        setFocus();
-    }
     function bossFight() {
-        var gf = document.getElementById("gameframe").contentWindow;
-        gf.player.px = gf.levelProperties.width - gf.levelProperties.grid * 11.5;
-        gf.player.py = gf.levelProperties.height - gf.levelProperties.grid - 1;
-        setFocus();
-    }
-    function nextCheckpoint(direction) {
-        var gf = document.getElementById("gameframe").contentWindow;
-        var cpdist, cpydist;
-        var cpdistMax = 9999999;
-        var cpnMax = -1;
-        for (var n = 0; n < gf.checkpoints.children.length; n++) {
-            cpdist = direction * (gf.checkpoints.children[n].x - gf.player.px) - gf.levelProperties.grid;
-            cpydist = direction * (gf.player.py - gf.checkpoints.children[n].y) - gf.levelProperties.grid;
-            if ((cpdist > 0 || cpydist > 0 && cpdist > -gf.levelProperties.grid * 2) && cpdist < cpdistMax) {
-                cpnMax = n;
-                cpdistMax = cpdist;
-            }
-        }
-        if (cpnMax != -1) {
-            gf.player.px = gf.checkpoints.children[cpnMax].x + gf.levelProperties.grid / 2;
-            gf.player.py = gf.checkpoints.children[cpnMax].y + gf.levelProperties.grid - 1;
-        }
-        setFocus();
-    }
-    function openBarriers() {
-        var gf = document.getElementById("gameframe").contentWindow;
-        gf.killCounter.kills = 50;
-        gf.updateBarriers();
+        document.getElementById("gameframe").contentWindow.difficulty = 19;
         setFocus();
     }
     </script>
     <div id="wrapper">
         <iframe src="index.html" id="gameframe" class="f2x" scrolling="no" frameborder="0" style=""></iframe><br/>
-        <button onclick="make1x()">Size 1x</button>
-        <button onclick="make2x()">Size 2x</button>
-        <button onclick="makeFullScreen()">Fullscreen</button>
         <button onclick="killGame()">Stop Game</button>
         <button onclick="startGame()">Restart Game</button>
         &nbsp;&nbsp;&nbsp;&nbsp;
-        <button onclick="nextCheckpoint(-1)">Previous Checkpoint</button>
-        <button onclick="nextCheckpoint(1)">Next Checkpoint</button>
-        <button onclick="bossFight()">Skip to Boss</button>
+        <button onclick="bossFight()">Skip to 19</button>
         <button onclick="godmode()">God Mode</button>
-        <button onclick="openBarriers()">Open Barriers</button>
-        <br>
-        <button onclick="reloadMap()">Reload Map</button>
-        <button onclick="muteMusic()">Stop Music</button>
-        <!--
-        <button onclick="playEnv()">Play Crickets</button>
-        <button onclick="stopEnv()">Stop Crickets</button>
-        -->
         <div id="description">
-            <h1>Sakata Mountain</h1>
+            <h1>Cirno's Flash Freeze</h1>
 
-            <p>Originally created for Touhou Game Jam 2, using PixiJS.</p>
+            <p>Originally created for the 2019/09/09 Touhou 9 Jam, using HTML + Javascript.</p>
 
-            <p>Nemuno Sakata just wants to gather some vegetables, but there's trouble on the mountain. Jump and slash your way around a twisting level with enemies throughout and a mystery boss at the end.</p>
+            <p>Cirno bullied the frogs for too long and ran out of magic power. Now she needs to collect magic stars so she can fight back before they corner her! Freeze 20 frogs to show them who's strongest in Gensokyo.</p>
 
             <p>This is a fan work of the Touhou Project and is not associated with the original creators.</p>
-
-            <h2>Game Instructions</h2>
-
-            <ul>
-            <li>Avoid enemy projectiles. (Some projectiles can be destroyed with your melee attack, depending on difficulty mode.)</li>
-            <li>Activate checkpoints along the way. (You are immune to damage while standing on checkpoints.)</li>
-            <li>The screen shows health (top-left), score (top-right), and time elapsed in seconds (bottom-left).</li>
-            <li>The ending dialog depends on your score (below 31, 31-40, or 41).</li>
-            </ul>
 
             <h3>Controls</h3>
 
             <ul>
-            <li><b>Move left:</b> Left Arrow or A</li>
-            <li><b>Move right:</b> Right Arrow or D</li>
-            <li><b>Look up:</b> Up Arrow or W</li>
-            <li><b>Look down:</b> Down Arrow or S</li>
-            <li><b>Attack:</b> J, Z, or 4</li>
-            <li><b>Jump:</b> K, X, or 3</li>
-            <li><b>Drop down:</b> Look down + Jump</li>
-            </ul><ul>
-            <li><b>Respawn:</b> Hold R</li>
-            <li><b>Text skip:</b> Semicolon, V, or 1</li>
-            <li><b>Pause:</b> Escape or P</li>
+            <li>Arrow keys or ESDF to move.</li>
+            <li>Spacebar to freeze nearby enemies after collecting a magic star.</li>
+            <li>R to restart.</li>
             </ul>
 
             <h2>Credits</h2>
 
+            <!--
             <p>Music
             <ul>
             <li><b>Arranged and sequenced by:</b> <a href="https://soundcloud.com/krichotomy">Karob</a></li>
             <li><b>Original:</b> <a href="https://kourindou.exblog.jp/">ZUN</a></li>
-            </ul>
-            </p>
-
-            <!--
-            <p>The background audio "crickets.mp3" is a derivative of "rbh crickets suburb night1.wav" by RHumphries, which is licensed under CC BY 3.0.
-            <ul>
-            <li><b>Source:</b> <a href="https://freesound.org/people/RHumphries/sounds/1053/">https://freesound.org/people/RHumphries/sounds/1053/</a></li>
-            <li><b>License:</b> <a href="https://creativecommons.org/licenses/by/3.0/">https://creativecommons.org/licenses/by/3.0/</a></li>
             </ul>
             </p>
             -->
