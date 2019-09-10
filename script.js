@@ -73,6 +73,15 @@ var player = {};
 
 var bounds = {};
 
+var dir = {
+    up: { x: 0, y: -1 },
+    down: { x: 0, y: 1 },
+    left: { x: -1, y: 0 },
+    right: { x: 1, y: 0 }
+}
+
+var dirs = [ dir.up, dir.down, dir.left, dir.right ];
+
 function createGame()
 {
     bounds.x = level[0].length;
@@ -119,47 +128,86 @@ document.onkeydown = checkKey;
 
 function checkKey(e)
 {
-    var direction = "";
+    var direction = null;
     e = e || window.event;
 
     if (e.keyCode == '38') {
         // up arrow
-        direction = "up";
+        direction = dir.up;
     }
     else if (e.keyCode == '40') {
         // down arrow
-        direction = "down";
+        direction = dir.down;
     }
     else if (e.keyCode == '37') {
        // left arrow
-       direction = "left";
+       direction = dir.left;
     }
     else if (e.keyCode == '39') {
        // right arrow
-       direction = "right";
+       direction = dir.right;
     }
 
-    if (direction != "") updateGame(direction);
+    if (direction != null) updateGame(direction);
 }
 
 function updateGame(direction)
 {
-    var tx = player.x;
-    var ty = player.y;
-    if (direction == "up") ty--;
-    if (direction == "down") ty++;
-    if (direction == "left") tx--;
-    if (direction == "right") tx++;
-    level[ty][tx] = ids.cirno;
-    level[player.y][player.x] = 0;
-    player.x = tx;
-    player.y = ty;
+    var id;
 
+    // Move player
+    var tx = player.x + direction.x;
+    var ty = player.y + direction.y;
+    if (tx >+ 0 && tx < bounds.x && ty >= 0 && ty < bounds.y)
+    {
+        var doMove = false;
+        id = level[ty][tx];
+        if (id == 0) doMove = true;
+        else if (id == ids.star) doMove = true;
+        else if (id == ids.barrel || id == ids.ice)
+        {
+            var ttx = tx;
+            var tty = ty;
+            while (true)
+            {
+                ttx += direction.x;
+                tty += direction.y;
+                if (ttx < 0 || ttx >= bounds.x) break;
+                if (tty < 0 || tty >= bounds.y) break;
+                var id2 = level[tty][ttx];
+                if (id2 == ids.barrel || id2 == ids.ice) continue;
+                if (id2 != 0) break;
+
+                while (true)
+                {
+                    level[tty][ttx] = level[tty - direction.y][ttx - direction.x];
+                    ttx -= direction.x;
+                    tty -= direction.y;
+                    if (ttx == tx && tty == ty)
+                    {
+                        level[ty][tx] = 0;
+                        doMove = true;
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+        if (doMove)
+        {
+            level[ty][tx] = ids.cirno;
+            level[player.y][player.x] = 0;
+            player.x = tx;
+            player.y = ty;
+        }
+    }
+
+    // Move frogs
     for (var j = 0; j < bounds.y; j++)
     {
         for (var i = 0; i < bounds.x; i++)
         {
-            var id = level[j][i];
+            id = level[j][i];
             if (id == ids.frog && live[j][i] == true)
             {
                 var result = findPath(i, j, player.x, player.y);
@@ -182,6 +230,7 @@ function updateGame(direction)
         }
     }
 
+    // Update graphics
     for (var j = 0; j < bounds.y; j++)
     {
         for (var i = 0; i < bounds.x; i++)
