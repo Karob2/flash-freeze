@@ -609,7 +609,7 @@ function updateGraphics()
         }
     }
 
-    document.getElementById("score").innerHTML = "Level: " + difficulty + "/20";
+    document.getElementById("score").innerHTML = "Level: " + difficulty + "/25";
 }
 
 function findPath(startX, startY, endX, endY)
@@ -773,7 +773,7 @@ function flashFreeze()
                 div.style.backgroundPositionX = -tx + "px";
                 div.style.backgroundPositionY = -ty + "px";
                 difficulty++;
-                if (difficulty == 20)
+                if (difficulty == 25)
                 {
                     updateGraphics();
                     document.getElementById("alerts").style.visibility = "visible";
@@ -802,7 +802,7 @@ function flashFreeze()
         alterEgg++;
         if (alterEgg > 1) alterEgg = 0;
         //if (alterEgg == 0) spawnIceItem(ids.barrel);
-        if (alterEgg == 1) spawnIceItem(ids.egg);
+        if (alterEgg <= 1) spawnIceItem(ids.egg);
     }
 }
 
